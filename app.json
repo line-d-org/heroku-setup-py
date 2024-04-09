@@ -11,8 +11,6 @@
   "website": "https://www.line-d.net",
   "repository": "https://github.com/line-d-org/heroku-setup-py",
   "logo": "https://assets-global.website-files.com/645e8f828afdb2ef50593c98/65983c51ee693255fc838317_ld_logo_01042023.png",
-  "scripts": {
-    "postdeploy": "bundle exec rake bootstrap"
   "formation": {
     "workflow": {
       "command": "python app.py",
@@ -27,7 +25,6 @@
       "size": "basic"
     },
   },
-  "image": "heroku/python",
   "addons": [
     "line-d",
     {
