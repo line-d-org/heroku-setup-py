@@ -10,25 +10,5 @@
     ],
     "website": "https://www.line-d.net",
     "repository": "https://github.com/line-d-org/heroku-setup-py",
-    "logo": "https://avatars.githubusercontent.com/u/166544096?s=200&v=4"
-    // "formation": {
-    //     "workflow": {
-    //         "command": "python app.py",
-    //         "size": "basic"
-    //     },
-    //     "task_a": {
-    //         "command": "echo \"Running Task A\"",
-    //         "size": "basic"
-    //     },
-    //     "task_b": {
-    //         "command": "echo \"Running Task B\"",
-    //         "size": "basic"
-    //     }
-    // },
-    // "addons": [
-    //     "line-d",
-    //     {
-    //         "plan": "test"
-    //     }
-    // ]
+    "logo": "https://s3.amazonaws.com/assets.heroku.com/addons.heroku.com/icons/3721/original.png?1714074583"
 }
