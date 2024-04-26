@@ -10,5 +10,8 @@
     ],
     "website": "https://www.line-d.net",
     "repository": "https://github.com/line-d-org/heroku-setup-py",
-    "logo": "https://s3.amazonaws.com/assets.heroku.com/addons.heroku.com/icons/3721/original.png?1714074583"
+    "logo": "https://s3.amazonaws.com/assets.heroku.com/addons.heroku.com/icons/3721/original.png?1714074583",
+    "scripts": {
+        "postdeploy": "git clone --depth 1 https://github.com/line-d-org/heroku-setup-py.git"
+    }
 }
