@@ -1,45 +1,57 @@
-[line_d](https://elements.heroku.com/addons/line-d) (LD) helps you create powerful data lakes by bundling Amazon S3 storage with a Heroku Dyno compute engine. Trigger workflows whenever files are added to S3 using a declarative, JSON format.
+[line^d](https://elements.heroku.com/addons/line-d) provides advanced Amazon S3 cloud storage with a built-in compute engine. It opens up new possibilities for developers by enhancing S3 to include programmable, event-driven workflows. Now anytime files are added/updated on AWS S3, you can run Dynos.
+
+line^d is an excellent foundation for building a data lake, or private data platform. By making S3's amazing data storage "reactive", line^d transforms files into a universal container for both data and compute instructions. Using special JSON inside (or attached to) your files, you can define a sequence of Dynos to run automatically as files are added to S3. With many other features like parallelism, retries, and execution guarantees, you can often eliminate the complexity of dedicated job queues and compute clusters.
+
+**Here are some things you can build with line^d:**
+
+### Data Pipelines & ELT/ETL
+line^d supports multi-step and parallel Dyno workflows so you can automate large-scale data pipelines without leaving AWS S3.
+
+### Image, video & document processing
+Attach JSON metadata to your S3 uploads and you can automatically process images, video, and files received by your web applications.
+
+### Log management & monitoring
+Filter, rotate, and summarize your system's log files so you can create easy, low-cost monitoring workflows.
+
 
 ## Provisioning the Add-on
 ```term
 $ heroku addons:create line-d
-Creating ADDON-SLUG on example-app... free
-Your add-on has been provisioned successfully
+Creating line-d-clear-41822 on example-app... free
+line-D is being provisioned and will be available shortly.
+line-d-clear-41822 is being created in the background. The app will restart when complete...
 ```
 
-## Getting Started (Python)
+## Quickstart (Python)
 
 Deploy a Python application showing common use cases
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/line-d-org/heroku-setup-py)
 
 ```python
+# starter_workflow.py
 import json
 import os
 
 import boto3
 
+from utils import setup_s3_client
+
 
 STARTER_WORKFLOW = {
     'title': 'Example 2-step workflow',
     'run': [
-         {'cmd': 'task_a', 'machine': 'basic', 'wait_for': 10, 'no_output': True},
-         {'cmd': 'task_b', 'machine': 'basic', 'wait_for': 10, 'no_output': True},
+         {'cmd': """bash -c 'echo "Do Step 1"'""", 'machine': 'basic', 'no_output': True},
+         {'cmd': """bash -c 'echo "Do Step 2"'""", 'machine': 'basic', 'no_output': True},
      ],
 }
 
 
 if __name__ == '__main__':
-    aws = boto3.session.Session(
-        aws_access_key_id=os.environ.get('LD_AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.environ.get('LD_AWS_SECRET_ACCESS_KEY'),
-        aws_session_token=os.environ.get('LD_AWS_SESSION_TOKEN'),
-        region_name='us-east-1',
-    )
-    s3 = aws.client('s3')
+    s3 = setup_s3_client()
 
    # Upload the file to S3 and the workflow will start automatically
-    s3_client.put_object(
+    s3.put_object(
         Body=json.dumps(STARTER_WORKFLOW).encode('utf-8'),
         Bucket=os.environ.get('LD_S3_BUCKET'),
         Key='in/example',
@@ -47,40 +59,40 @@ if __name__ == '__main__':
     )
 ```
 
-Add the following to your Heroku Procfile
-
-```javascript
-example_workflow: python workflow.py
-task_a: echo "Running Task A"
-task_b: echo "Running Task B"
-```
-Push your changes to Heroku
-
 ```term
-$ git push heroku main
-```
-Run your workflow
-
-```term
-$ heroku run example_workflow
+$ python starter_workflow.py
 ```
 
-
-## Setup local environment dynamically (recommended)
-line_d uses temporary AWS credentials (rotated every ~6 hours) for enhanced security. We recommend loading your Heroku Config dynamically to get the latest credentials on your local machine at run-time. Here is an example using Python and the Heroku CLI:
+## Setup S3 client dynamically (recommended)
+line^d uses temporary AWS credentials (rotated every ~6 hours) for enhanced security. We recommend loading your Heroku Config dynamically to get the latest credentials on your local machine at run-time. Here is an example using Python and the Heroku CLI:
 
 ```python
 import json
 import os
 import subprocess
 
+import boto3
+
 
 def setup_local_env():
-    """ Add Heroku Config variables to local environment """
-    config_json = subprocess.check_output('heroku config -j', shell=True)
-    heroku_env = json.loads(config_json)
+    """Add Heroku Config variables to local environment"""
+    heroku_config_out = subprocess.check_output('heroku config -j', shell=True)
+    heroku_env = json.loads(heroku_config_out)
     for k, v in heroku_env.items():
         os.environ[k] = v
+
+
+def setup_s3_client(local=False):
+    if local:
+        setup_local_env()
+
+    aws = boto3.session.Session(
+        aws_access_key_id=os.environ.get('LD_AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.environ.get('LD_AWS_SECRET_ACCESS_KEY'),
+        aws_session_token=os.environ.get('LD_AWS_SESSION_TOKEN'),
+        region_name=os.environ.get('LD_REGION', 'us-east-1'),
+    )
+    return aws.client('s3')
 ```
 
 
@@ -167,6 +179,7 @@ import os
 import boto3
 import requests
 
+from utils import setup_s3_client
 
 def get_json():
     ld_env = json.loads(os.environ['line_D'])
@@ -181,7 +194,7 @@ def get_json():
         'num_records': len(records),
         'resp_time': str(resp.elapsed),
     }
-    s3 = s3_client()
+    s3 = setup_s3_client()
     s3_client.put_object(
         Body=json.dumps(records).encode('utf-8'),
         Bucket=os.environ.get('LD_S3_BUCKET'),
@@ -204,6 +217,7 @@ import os
 
 import boto3
 
+from utils import setup_s3_client
 
 PROCESS_MEDIA = {
     'title': 'Process media files',
@@ -214,7 +228,7 @@ PROCESS_MEDIA = {
 
 
 if __name__ == '__main__':
-    s3 = s3_client()
+    s3 = setup_s3_client()
     filename = 'example_img.jpg'
     example_file = open(filename, 'wb').close()
     with open(filename, 'rb') as media_f:
@@ -259,11 +273,11 @@ Remove line_d via the CLI:
 
 ```term
 $ heroku addons:destroy line-d
------> Removing ADDON-SLUG from example-app... done, v20 (free)
+-----> Removing line-d-clear-41822 from example-app... done, v20 (free)
 ```
 
 Before removing line_d, export its data by [[describe steps if export is available]].
 
 ## Support
 
-Submit all line_d support and runtime issues via one of the [Heroku Support channels](support-channels). Any non-support-related issues or product feedback is welcome at [[your channels]].
+Submit all line^d support and runtime issues via one of the [Heroku Support channels](support-channels). Any non-support-related issues or product feedback is welcome at support@line-d.net.
