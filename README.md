@@ -1,6 +1,6 @@
 [line^d](https://elements.heroku.com/addons/line-d) provides advanced Amazon S3 cloud storage with a built-in compute engine. It opens up new possibilities for developers by enhancing S3 to include programmable, event-driven workflows. Now anytime files are added/updated on AWS S3, you can run Dynos.
 
-line^d is an excellent foundation for building a data lake, or private data platform. By making S3's amazing data storage "reactive", line^d transforms files into a universal container for both data and compute instructions. Using special JSON inside (or attached to) your files, you can define a sequence of Dynos to run automatically as files are added to S3. With many other features like parallelism, retries, and execution guarantees, you can often eliminate the complexity of dedicated job queues and compute clusters.
+line^d is an excellent foundation for building a data lake, or private data platform. Making S3's data storage "reactive" by default, line^d transforms files into a universal container for both data and compute instructions. Using special JSON inside (or attached to) your files, you can define a sequence of Dynos to run automatically when they are added to S3. With many other features like parallelism, retries, and execution guarantees, you can often eliminate the cost and complexity of dedicated job queues/compute clusters.
 
 **Here are some things you can build with line^d:**
 
